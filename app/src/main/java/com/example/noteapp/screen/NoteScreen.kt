@@ -4,6 +4,7 @@ import Note
 import android.content.ContentValues.TAG
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,7 +31,6 @@ import com.example.noteapp.components.NoteInputText
 import com.example.noteapp.data.NotesDataSource
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -45,6 +46,7 @@ fun NoteScreen(
     var description by remember {
         mutableStateOf("")
     }
+    val context = LocalContext.current
     Column(modifier = Modifier.padding(6.dp)) {
         TopAppBar(
             title = {
@@ -92,16 +94,20 @@ fun NoteScreen(
                 text = "Save",
                 onClick = {
                     if (title.isNotEmpty() && description.isNotEmpty()) {
-                        //save or add to the list
+                        onAddNote(Note(title = title, description = description))
                         title = ""
                         description = ""
+                        Toast.makeText(context, "Note Added", Toast.LENGTH_SHORT).show()
+
                     }
                 })
         }
         Divider(modifier = Modifier.padding(10.dp))
         LazyColumn {
             items(notes) { note ->
-                NoteRow(note=note, onNoteClick = {})
+                NoteRow(note = note, onNoteClick = {
+                    onRemoveNote(note)
+                })
 
             }
 
@@ -120,11 +126,7 @@ fun NoteRow(
     note: Note,
     onNoteClick: (Note) -> Unit
 ) {
-//    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-//    val convertedHours=note.entryDate.hours % 24
-//    Log.d(TAG, "NoteRow: $convertedHours")
-//    Log.d(TAG, "NoteRow: ${note.entryDate.year}")
-//    val formattedDate = LocalDateTime.parse(note.entryDate.year.toString()+"-"+note.entryDate.month.toString()+"-"+note.entryDate.day.toString()+" "+convertedHours.toString()+":"+note.entryDate.minutes.toString()+":"+note.entryDate.seconds.toString(), dateFormatter)
+//
     Surface(
         modifier
             .padding(4.dp)
@@ -135,7 +137,7 @@ fun NoteRow(
     ) {
         Column(
             modifier
-                .clickable {}
+                .clickable {onNoteClick(note)}
                 .padding(
                     horizontal = 14.dp,
                     vertical = 6.dp
@@ -143,7 +145,8 @@ fun NoteRow(
             horizontalAlignment = Alignment.Start) {
             Text(
                 text = note.title,
-                style = MaterialTheme.typography.subtitle2)
+                style = MaterialTheme.typography.subtitle2
+            )
             Text(text = note.description, style = MaterialTheme.typography.subtitle1)
             Text(
                 text = note.entryDate.format(DateTimeFormatter.ofPattern("EEE,d MMM")),
