@@ -1,31 +1,33 @@
 package com.example.noteapp.data
 
 import Note
+import androidx.compose.runtime.MutableState
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [Note::class], version = 1, exportSchema = false)
-abstract class NoteDatabase:RoomDatabase() {
-    abstract fun noteDao():NoteDatabaseDao
+abstract class NoteDatabase : RoomDatabase() {
+    abstract fun noteDao(): NoteDatabaseDao
 }
 
 @Dao
 interface NoteDatabaseDao {
     @Query("SELECT * from notes_tbl")
-    fun getNotes():List<Note>
+    fun getNotes():Flow<List<Note>>
 
 
- @Query ("SELECT * from notes_tbl where id =:id")
- fun getNoteById(id:String):Note
+    @Query("SELECT * from notes_tbl where id =:id")
+    suspend fun getNoteById(id: String): Note
 
- @Insert(onConflict = OnConflictStrategy.REPLACE)
- fun Insert(note: Note)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun Insert(note: Note)
 
- @Update(onConflict = OnConflictStrategy.REPLACE)
- fun Update(note: Note)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun Update(note: Note)
 
- @Query("DELETE from notes_tbl")
- fun deleteAll()
+    @Query("DELETE from notes_tbl")
+    suspend fun deleteAll()
 
- @Delete
- fun deleteNote(note: Note)
+    @Delete
+    suspend fun deleteNote(note: Note)
 }
